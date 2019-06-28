@@ -12,27 +12,36 @@ public struct PostgresError: Error {
     public let message: String
 }
 
-public enum OID: UInt32 { // https://doxygen.postgresql.org/include_2catalog_2pg__type_8h.html
-    case int4 = 23 // This is a Swift.Int32 (4 bytes)
-    case varchar = 1043 // Swift String
-}
-
-public struct Row {
+public struct Row: Collection {
     public let index: Int32
     public let result: Tuples
     
-    public subscript(column: Int32) -> String {
-//        dump(PQftype(result.result, column))
-        assert(PQftype(result.result, column) == OID.varchar.rawValue)
-        return String(cString: result.value(row: index, column: column))
+    public var startIndex: Int32 {
+        return 0
+    }
+    public var endIndex: Int32 {
+        return result.numberOfFields
     }
     
-    public subscript(column: Int32) -> Int32 {
-        assert(PQftype(result.result, column) == OID.int4.rawValue)
-        let ptr = result.value(row: index, column: column)
-        return ptr.withMemoryRebound(to: Int32.self, capacity: 1) { intPtr in
-            Int32(bigEndian: intPtr.pointee)
+    public func index(after i: Int32) -> Int32 {
+        return i + 1
+    }
+    
+    public subscript(info column: Int32) -> (oid: OID, name: String, value: String) {
+        return (result.oid(column: column), result.name(column: column), self[column])
+    }
+    
+    public subscript(index: Int32) -> String {
+        return String(cString: result.value(row: self.index, column: index))
+    }
+}
+
+extension Row: CustomStringConvertible {
+    public var description: String {
+        let x = (0..<result.numberOfFields).map {
+            (result.name(column: $0), result.oid(column: $0), String(cString: result.value(row: index, column: $0)))
         }
+        return "\(x)"
     }
 }
 
@@ -58,6 +67,14 @@ public class Tuples: Collection {
         return i + 1
     }
     
+    public func oid(column: Int32) -> OID {
+        let type = PQftype(result, column)
+        guard let oid = OID(rawValue: type) else {
+            fatalError("Unkown OID \(type)")
+        }
+        return oid
+    }
+    
     public var numberOfFields: Int32 {
         return PQnfields(result)
     }
@@ -75,9 +92,20 @@ public class Tuples: Collection {
     }
 }
 
+extension Tuples: CustomStringConvertible {
+    public var description: String {
+        if numberOfFields == 1 {
+            return "\(self[0])"
+        } else {
+        	return "\(Array(self))"
+        }
+    }
+}
+
 public protocol Param {
     static var oid: OID { get }
-    var binaryValue: Data { get }
+    var stringValue: String { get }
+    init(stringValue string: String)
 }
 
 public enum QueryResult {
@@ -94,7 +122,6 @@ extension Array where Element == String {
     
 }
 
-
 final public class Connection {
     let connection: OpaquePointer
     public init(connectionInfo: String) throws {
@@ -105,19 +132,9 @@ final public class Connection {
     }
     
     @discardableResult public func query(sql: String, params: [Param] = []) throws -> QueryResult {
-        let data = params.map { $0.binaryValue }
-        let pointers: [UnsafePointer<Int8>?] = data.map { data in
-            let pointer = UnsafeMutablePointer<UInt8>.allocate(capacity: data.count)
-            data.copyBytes(to: pointer, count: data.count)
-            return UnsafeRawPointer(pointer).assumingMemoryBound(to: Int8.self)
+        let result = params.map { $0.stringValue }.withCStringsAlt { pointers in
+            PQexecParams(connection, sql, Int32(params.count), params.map { type(of: $0).oid.rawValue }, pointers, nil, nil, 0)
         }
-        defer {
-            for (pointer, data) in zip(pointers,data) {
-                UnsafeMutablePointer(mutating: pointer!).deallocate()
-            }
-        }
-        
-        let result = PQexecParams(connection, sql, Int32(params.count), params.map { type(of: $0).oid.rawValue }, pointers, data.map { Int32($0.count) }, params.map { _ in 1 }, 1)
         switch PQresultStatus(result) {
         case PGRES_COMMAND_OK:
             return .ok
@@ -134,17 +151,3 @@ final public class Connection {
     }
 }
 
-extension Int32: Param {
-    public static let oid = OID.int4
-    public var binaryValue: Data {
-        var copy = bigEndian
-        return Data(bytes: &copy, count: 4)
-    }
-}
-
-extension String: Param {
-    public static let oid = OID.varchar
-    public var binaryValue: Data {
-        return data(using: .utf8)!
-    }
-}
