@@ -1,0 +1,5 @@
+module Clibpq [system] {
+    header "shim.h"
+    link "pq"
+    export *
+}
