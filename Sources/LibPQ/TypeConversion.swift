@@ -13,26 +13,67 @@ public protocol Param {
     init(stringValue string: String)
 }
 
+// "SELECT typname, oid from pg_type;"
 public enum OID: UInt32 { // https://doxygen.postgresql.org/include_2catalog_2pg__type_8h.html
     case bool = 16
+    case int2 = 21
     case int4 = 23 // This is a Swift.Int32 (4 bytes)
+    case int8 = 20
     case text = 25
     case varchar = 1043 // Swift String
     case timestamp = 1114
     case uuid = 2950
 }
 
+extension Int64: Param {
+    public static let oid = OID.int8
+    public var stringValue: String { return "\(self)" }
+    public init(stringValue string: String) { self = Int64(string)! }
+}
+
 extension Int32: Param {
     public static let oid = OID.int4
-    public var stringValue: String {
-        return "\(self)"
-    }
-    
-    public init(stringValue string: String) {
-        self = Int32(string)!
-    }
-    
+    public var stringValue: String { return "\(self)" }
+    public init(stringValue string: String) { self = Int32(string)! }
 }
+
+
+extension Int16: Param {
+    public static let oid = OID.int2
+    public var stringValue: String { return "\(self)" }
+    public init(stringValue string: String) { self = Int16(string)! }
+}
+
+extension Int8: Param {
+    public static let oid = OID.int2
+    public var stringValue: String { return "\(self)" }
+    public init(stringValue string: String) { self = Int8(string)! }
+}
+
+extension UInt64: Param {
+    public static let oid = OID.int8
+    public var stringValue: String { return "\(self)" }
+    public init(stringValue string: String) { self = UInt64(string)! }
+}
+
+extension UInt32: Param {
+    public static let oid = OID.int4
+    public var stringValue: String { return "\(self)" }
+    public init(stringValue string: String) { self = UInt32(string)! }
+}
+
+extension UInt16: Param {
+    public static let oid = OID.int2
+    public var stringValue: String { return "\(self)" }
+    public init(stringValue string: String) { self = UInt16(string)! }
+}
+
+extension UInt8: Param {
+    public static let oid = OID.int2
+    public var stringValue: String { return "\(self)" }
+    public init(stringValue string: String) { self = UInt8(string)! }
+}
+
 
 extension String: Param {
     public static let oid = OID.varchar
