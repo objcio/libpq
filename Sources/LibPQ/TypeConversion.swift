@@ -7,6 +7,12 @@
 
 import Foundation
 
+public protocol Param {
+    static var oid: OID { get }
+    var stringValue: String { get }
+    init(stringValue string: String)
+}
+
 public enum OID: UInt32 { // https://doxygen.postgresql.org/include_2catalog_2pg__type_8h.html
     case bool = 16
     case int4 = 23 // This is a Swift.Int32 (4 bytes)
