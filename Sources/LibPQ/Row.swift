@@ -37,7 +37,7 @@ public struct Row: Collection {
 }
 
 extension Row {
-    public subscript<P: Param>(name: String) -> P? {
+    public subscript<P: Param>(name name: String) -> P? {
         return result.columnIndex(of: name).map { P.init(stringValue: self[$0]) }
     }
 }
