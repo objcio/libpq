@@ -23,6 +23,14 @@ public enum OID: UInt32 { // https://doxygen.postgresql.org/include_2catalog_2pg
     case varchar = 1043 // Swift String
     case timestamp = 1114
     case uuid = 2950
+    case float4 = 700
+    case float8 = 701
+}
+
+extension Int: Param {
+    public static let oid = OID.int8
+    public var stringValue: String { return "\(self)" }
+    public init(stringValue string: String) { self = Int(string)! }
 }
 
 extension Int64: Param {
@@ -48,6 +56,12 @@ extension Int8: Param {
     public static let oid = OID.int2
     public var stringValue: String { return "\(self)" }
     public init(stringValue string: String) { self = Int8(string)! }
+}
+
+extension UInt: Param {
+    public static let oid = OID.int8
+    public var stringValue: String { return "\(self)" }
+    public init(stringValue string: String) { self = UInt(string)! }
 }
 
 extension UInt64: Param {
@@ -81,6 +95,18 @@ extension String: Param {
     public init(stringValue string: String) {
         self = string
     }
+}
+
+extension Double: Param {
+    public static let oid = OID.float8
+    public var stringValue: String { return "\(self)" }
+    public init(stringValue string: String) { self = Double(string)! }
+}
+
+extension Float: Param {
+    public static let oid = OID.float4
+    public var stringValue: String { return "\(self)" }
+    public init(stringValue string: String) { self = Float(string)! }
 }
 
 extension Bool: Param {
