@@ -31,7 +31,7 @@ final public class Connection {
         }
     }
     
-    @discardableResult public func query(sql: String, params: [Param] = []) throws -> QueryResult {
+    @discardableResult public func execute(_ sql: String, _ params: [Param] = []) throws -> QueryResult {
         let result = params.map { $0.stringValue }.withCStringsAlt { pointers in
             PQexecParams(connection, sql, Int32(params.count), params.map { type(of: $0).oid.rawValue }, pointers, nil, nil, 0)
         }

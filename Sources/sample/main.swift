@@ -15,14 +15,14 @@ let tables = [
 ]
 
 for table in tables {
-    let result = try conn.query(sql: "select * from \(table) limit 1")
+    let result = try conn.execute(sql: "select * from \(table) limit 1")
     switch result {
     case .tuples(let t): print(t)
     default: print("Unkown")
     }
 }
 
-guard case let .tuples(result) = try conn.query(sql: "select * from users where github_login=$1 limit 1", params: ["chriseidhof"]) else { fatalError() }
+guard case let .tuples(result) = try conn.execute(sql: "select * from users where github_login=$1 limit 1", params: ["chriseidhof"]) else { fatalError() }
 for row in result {
     for col in row.startIndex..<row.endIndex {
         let info = row[info: col]
