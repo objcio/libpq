@@ -55,7 +55,8 @@ public class Tuples: Collection {
     }
     
     public func columnIndex(of name: String) -> Int32? {
-        return (0..<numberOfFields).first { self.name(column: $0) == name }
+        let num = PQfnumber(result, name)
+        return num >= 0 ? num : nil
     }
 }
 
