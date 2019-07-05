@@ -33,7 +33,7 @@ final public class Connection {
     }
     
     @discardableResult public func execute(_ sql: String, _ params: [Param] = []) throws -> QueryResult {
-        let result = params.map { $0.stringValue }.withCStringsAlt { pointers in
+        let result = params.map { $0.stringValue ?? "" }.withCStringsAlt { pointers in
             PQexecParams(connection, sql, Int32(params.count), params.map { type(of: $0).oid.rawValue }, pointers, nil, nil, 0)
         }
         switch PQresultStatus(result) {
@@ -43,9 +43,7 @@ final public class Connection {
             return .tuples(Tuples(result: result))
         default:
             throw PostgresError(message: String(cString: PQerrorMessage(connection)))
-        }
-        
-        // todo free pointers
+        }        
     }
     
     public func close() {
