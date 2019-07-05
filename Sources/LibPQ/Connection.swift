@@ -24,8 +24,8 @@ extension Array where Element == String {
 
 final public class Connection {
     let connection: OpaquePointer
-    public init(connectionInfo: String) throws {
-        connection = PQconnectdb(connectionInfo)
+    public init(connectionInfo: URL) throws {
+        connection = PQconnectdb(connectionInfo.absoluteString)
         guard PQstatus(connection) == CONNECTION_OK else {
             throw PostgresError(message: "Connection failed")
         }
