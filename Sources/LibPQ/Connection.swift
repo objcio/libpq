@@ -23,10 +23,11 @@ extension Array where Element == String {
 }
 
 final public class Connection {
-    let connection: OpaquePointer
+    var connection: OpaquePointer?
     public init(connectionInfo: URL) throws {
         connection = PQconnectdb(connectionInfo.absoluteString)
         guard PQstatus(connection) == CONNECTION_OK else {
+            connection = nil
             throw PostgresError(message: "Connection failed")
         }
     }
@@ -48,7 +49,8 @@ final public class Connection {
     }
     
     public func close() {
-        PQfinish(connection)
+        connection.map { PQfinish($0) }
+        connection = nil
     }
     
     deinit {
