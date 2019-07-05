@@ -37,3 +37,5 @@ for row in result {
         
     }
 }
+
+try conn.execute("INSERT INTO tasks (date, json, key) VALUES ($1, $2, $3)", [Date(), "{}", "hi"])

@@ -130,13 +130,20 @@ fileprivate let formatter: DateFormatter = {
     return d
 }()
 
+fileprivate let formatterWithoutMilliseconds: DateFormatter = {
+    let d = DateFormatter()
+    d.dateFormat = "yyyy-MM-dd HH:mm:ss"
+    d.timeZone = TimeZone(abbreviation: "UTC")!
+    return d
+}()
+
 extension Date: Param {
     static public let oid = OID.timestamp
     public var stringValue: String {
         return formatter.string(from: self)
     }
     public init(stringValue string: String) {
-        self = formatter.date(from: string)!
+        self = formatter.date(from: string) ?? formatterWithoutMilliseconds.date(from: string)!
     }
 }
 
