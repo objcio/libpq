@@ -46,8 +46,13 @@ final public class Connection {
         
         // todo free pointers
     }
-    deinit {
+    
+    public func close() {
         PQfinish(connection)
+    }
+    
+    deinit {
+        close()
     }
 }
 
