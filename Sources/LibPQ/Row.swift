@@ -31,6 +31,11 @@ public struct Row: Collection {
         return String(cString: result.value(row: self.index, column: index))
     }
     
+    public subscript(name: String) -> String? {
+        let index = result.columnIndex(of: name)!
+        return isNull(index: index) ? nil : self[index]
+    }
+    
     public func isNull(index: Int32) -> Bool {
         return PQgetisnull(result.result, self.index, index) == 1
     }
