@@ -13,13 +13,17 @@ public struct PostgresError: Error {
 }
 
 
-extension Array where Element == String {
+extension Array where Element == Optional<String> {
     func withCStringsAlt<Result>(_ f: ([UnsafePointer<Int8>?]) -> Result) -> Result {
-        let cStrings = map { strdup($0) }
-        defer { cStrings.forEach { free($0) } }
+        let cStrings: [UnsafeMutablePointer<Int8>?] = map { string in
+            guard let s = string else { return nil }
+            return strdup(s)
+        }
+        defer {
+            for case let p in cStrings { free(p) }
+        }
         return f(cStrings.map { UnsafePointer($0) })
     }
-    
 }
 
 final public class Connection {
@@ -33,7 +37,7 @@ final public class Connection {
     }
     
     @discardableResult public func execute(_ sql: String, _ params: [Param] = []) throws -> QueryResult {
-        let result = params.map { $0.stringValue ?? "" }.withCStringsAlt { pointers in
+        let result = params.map { $0.stringValue }.withCStringsAlt { pointers in
             PQexecParams(connection, sql, Int32(params.count), params.map { type(of: $0).oid.rawValue }, pointers, nil, nil, 0)
         }
         switch PQresultStatus(result) {
