@@ -42,10 +42,12 @@ final public class Connection {
         }
         switch PQresultStatus(result) {
         case PGRES_COMMAND_OK:
+            PQclear(result)
             return .ok
         case PGRES_TUPLES_OK:
             return .tuples(Tuples(result: result))
         default:
+            PQclear(result)
             throw PostgresError(message: String(cString: PQerrorMessage(connection)))
         }        
     }
