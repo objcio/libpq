@@ -20,7 +20,7 @@ extension Array where Element == Optional<String> {
             return strdup(s)
         }
         defer {
-            for case let p in cStrings { free(p) }
+            for p in cStrings { p.map { free($0) } }
         }
         return f(cStrings.map { UnsafePointer($0) })
     }
