@@ -19,7 +19,11 @@ let package = Package(
             dependencies: ["LibPQ"]),
 	    .systemLibrary(
 		    name: "Clibpq",
-			pkgConfig: "libpq"
+			pkgConfig: "libpq",
+            providers: [
+                .brew(["postgresql"]),
+                .apt(["libpq-dev"]),
+            ]
 		),
     ]
 )
