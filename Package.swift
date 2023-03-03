@@ -2,6 +2,28 @@
 
 import PackageDescription
 
+var libPQ: Target {
+    #if os(macOS)
+    return .systemLibrary(
+            name: "Clibpq",
+            path: "Sources/CLibpqmac",
+            pkgConfig: "libpq",
+            providers: [
+                .brew(["postgresql", "libpq"]),
+            ]
+        )
+    #else
+    return .systemLibrary(
+            name: "Clibpq",
+            pkgConfig: "libpq",
+            providers: [
+                .brew(["postgresql", "libpq"]),
+                .apt(["libpq-dev"]),
+            ]
+        )
+    #endif
+}
+
 let package = Package(
     name: "LibPQ",
     products: [
@@ -17,13 +39,6 @@ let package = Package(
         .target(
             name: "sample",
             dependencies: ["LibPQ"]),
-	    .systemLibrary(
-		    name: "Clibpq",
-			pkgConfig: "libpq",
-            providers: [
-                .brew(["postgresql", "libpq"]),
-                .apt(["libpq-dev"]),
-            ]
-		),
+        libPQ,
     ]
 )
