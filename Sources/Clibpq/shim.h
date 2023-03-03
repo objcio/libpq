@@ -3,8 +3,8 @@
 
 #ifdef __APPLE__
 
-#include "/opt/homebrew/opt/libpq/includA/libpq-fe.h"
-#include "/opt/homebrew/opt/libpq/includA/postgres_ext.h"
+#include "/opt/homebrew/opt/libpq/include/libpq-fe.h"
+#include "/opt/homebrew/opt/libpq/include/postgres_ext.h"
 
 #else
 
